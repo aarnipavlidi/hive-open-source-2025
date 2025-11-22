@@ -12,7 +12,8 @@ jobs:
     environment: staging
     steps:
       - name: Trigger Dokploy Deployment
-        # Uses a curl webhook to trigger deployment
-        # Replace the URL below with your actual Dokploy Webhook URL
         run: |
-          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}"
+          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}" \
+          -H "Content-Type: application/json" \
+          -H "X-GitHub-Event: push" \
+          -d '{"ref": "refs/heads/main"}'
