@@ -1,18 +1,37 @@
-name: Deploy Next.js into Dokploy for staging environment
+name: Deploy to Staging
 
 on:
   push:
     branches:
-      - staging
+      - staging # Change this if your staging branch is different
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: staging
+    name: Deploy to Dokploy
+
+    # -----------------------------------------------------
+    # THIS SECTION CREATES THE SIDEBAR LINK (Vercel Style)
+    # -----------------------------------------------------
+    environment:
+      name: staging
+      url: https://hive-stg.usko.lol  # <--- REPLACE THIS with your actual app URL
+
     steps:
-      - name: Trigger Dokploy Deployment
+      - name: Trigger Dokploy API
+        id: deploy-request
         run: |
-          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}" \
-          -H "Content-Type: application/json" \
-          -H "X-GitHub-Event: push" \
-          -d '{"ref": "refs/heads/main"}'
+          # 1. Trigger the deployment via API (Bypassing Git checks)
+          RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "https://${{ secrets.DOKPLOY_HOST }}/api/application.deploy" \
+            -H "accept: application/json" \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
+            -d '{"applicationId": "${{ secrets.DOKPLOY_APP_ID }}"}')
+
+          # 2. Check if Dokploy accepted it
+          if [ "$RESPONSE_CODE" -eq 201 ] || [ "$RESPONSE_CODE" -eq 200 ]; then
+            echo "✅ Deployment triggered successfully on Dokploy!"
+          else
+            echo "❌ Failed to trigger deployment. HTTP Code: $RESPONSE_CODE"
+            exit 1
+          fi

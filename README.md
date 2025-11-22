@@ -1,6 +1,8 @@
 
 # hive-open-source-2025
 
+[![Staging Deployment Status](https://github.com/aarnipavlidi/hive-open-source-2025/actions/workflows/staging.deploy.yml/badge.svg)](https://github.com/aarnipavlidi/hive-open-source-2025/actions/workflows/staging.deploy.yml)
+
 ## Requirements
 
 Following things are required at the moment, when running project locally:
