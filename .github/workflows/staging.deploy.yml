@@ -8,6 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - name: Trigger Dokploy Deployment
         # Uses a curl webhook to trigger deployment
