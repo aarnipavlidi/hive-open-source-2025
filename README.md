@@ -1,10 +1,10 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# hive-open-source-2025
 
-## Getting Started
+## Getting Started (development)
 
-First, run the development server:
+Run the development server locally:
 
-```bash
+```/dev/null/commands.sh#L1-6
 npm run dev
 # or
 yarn dev
@@ -14,23 +14,28 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000` in your browser. Edit `app/page.tsx` to see live reloads.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Running with Docker locally
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Before building or running the Docker image locally, make sure you have a `.env.local` file at the project root. The Docker run script in `package.json` expects `.env.local` and will load environment variables from it.
 
-## Learn More
+At a minimum set `PORT` in `.env.local` (the repository's `package.json` run script maps port `3001` by default). Example `.env.local`:
 
-To learn more about Next.js, take a look at the following resources:
+```/dev/null/example.env#L1-4
+PORT=3001
+# Add any other runtime ENV variables your app needs, e.g.:
+# NEXT_PUBLIC_API_URL=https://api.example.com
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This repo provides convenient npm scripts in `package.json`:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `docker:build:local` — builds the Docker image
+- `docker:run:local` — runs the image loading `.env.local` and mapping port `3001`
 
-## Deploy on Vercel
+Use the npm scripts:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```/dev/null/commands.sh#L7-12
+npm run docker:build:local
+npm run docker:run:local
+```

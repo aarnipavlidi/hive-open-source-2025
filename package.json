@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "docker:build:local": "docker build -t hive-open-source-2025:local .",
+    "docker:run:local": "docker run --rm --env-file .env.local -p 3001:3001 hive-open-source-2025:local"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
