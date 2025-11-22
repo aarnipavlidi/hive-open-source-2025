@@ -1,4 +1,12 @@
+
 # hive-open-source-2025
+
+## Requirements
+
+Following things are required at the moment, when running project locally:
+
+- Node.js on version `24.11.1`
+- NPM on version `11.6.2`
 
 ## Getting Started (development)
 
