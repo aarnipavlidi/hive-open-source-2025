@@ -1,3 +1,4 @@
+## GitHub Actions workflow to deploy Next.js application to Dokploy on push to staging branch
 name: Deploy Next.js into Dokploy for staging environment
 
 on:
