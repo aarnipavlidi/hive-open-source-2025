@@ -49,3 +49,37 @@ Use the npm scripts:
 npm run docker:build:local
 npm run docker:run:local
 ```
+
+### Dokploy
+
+#### Automated Cron Jobs
+
+As of right now there are some issues, the way Dokploy is doing cleanup by removing unused images etc. which means the storage gets full faster than it is supposed to. So to tackle this, we introduce automated script, which handles this for us once per day.
+
+##### Daily Docker Cleanup
+
+```#!/bin/bash
+WAIT=10
+
+echo "Starting Docker cleanup..."
+
+while true; do
+    ACTIVE_PROCESSES=$(ps aux | grep -E 'docker build|docker pull' | grep -v grep)
+
+    if [ -z "$ACTIVE_PROCESSES" ]; then
+        echo "Docker is idle. Starting cleanup..."
+        break
+    else
+        echo "Docker is busy. Will check again in 10 seconds..."
+        sleep $WAIT
+    fi
+done
+
+docker container prune --force
+docker image prune --all --force
+docker volume prune --all --force
+docker builder prune --all --force
+docker system prune --all --volumes --force
+
+echo "Docker cleanup completed."
+```
