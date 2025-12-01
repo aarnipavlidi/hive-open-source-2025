@@ -150,7 +150,8 @@ POOLER_MAX_CLIENT_CONN=100
 # Unique tenant identifier
 POOLER_TENANT_ID=${PROJECT_ID}
 # Pool size for internal metadata storage used by Supavisor
-# This is separate fr
+# This is separate from client connections and used only by Supavisor itself
+POOLER_DB_POOL_SIZE=5
 
 ##############################
 # --- Supabase API Proxy --- #
