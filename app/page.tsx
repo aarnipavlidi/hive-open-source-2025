@@ -49,7 +49,7 @@ export default function Home() {
             Example of using shadcn/ui
           </Button>
           <Button variant="outline" size="lg" className="">
-            TEST: Button component
+            TEST AUTO DEPLOYMENT: Button component
           </Button>
         </div>
       </main>
