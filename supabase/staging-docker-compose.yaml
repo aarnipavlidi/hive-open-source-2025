@@ -1,11 +1,5 @@
-# Usage
-#   Start:              docker compose up
-#   With helpers:       docker compose -f docker-compose.yml -f ./dev/docker-compose.dev.yml up
-#   Stop:               docker compose down
-#   Destroy:            docker compose -f docker-compose.yml -f ./dev/docker-compose.dev.yml down -v --remove-orphans
-#   Reset everything:  ./reset.sh
-
 name: supabase
+x-supabase-release: "12-10-2025" ## https://github.com/supabase/supabase/blob/master/docker/versions.md
 
 configs:
   supabase-kong-config:
@@ -20,10 +14,10 @@ configs:
         - username: DASHBOARD
         - username: anon
           keyauth_credentials:
-            - key: ${ANON_KEY}
+            - key: $ANON_KEY
         - username: service_role
           keyauth_credentials:
-            - key: ${SERVICE_ROLE_KEY}
+            - key: $SERVICE_ROLE_KEY
 
       ###
       ### Access Control List
@@ -304,18 +298,18 @@ configs:
     content: |
       \c _supabase
       create schema if not exists _analytics;
-      alter schema _analytics owner to '${POSTGRES_USER}';
+      alter schema _analytics owner to postgres;
       \c postgres
   supabase-pooler-config:
     content: |
       \c _supabase
       create schema if not exists _supavisor;
-      alter schema _supavisor owner to '${POSTGRES_USER}';
+      alter schema _supavisor owner to postgres;
       \c postgres
   supabase-realtime-config:
     content: |
       create schema if not exists _realtime;
-      alter schema _realtime owner to '${POSTGRES_USER}';
+      alter schema _realtime owner to postgres;
   supabase-roles-config:
     content: |
       ALTER USER authenticator WITH PASSWORD '${POSTGRES_PASSWORD}';
@@ -355,7 +349,7 @@ configs:
         CREATE FUNCTION supabase_functions.http_request()
           RETURNS trigger
           LANGUAGE plpgsql
-          AS $function$
+          AS $$function$$
           DECLARE
             request_id bigint;
             payload jsonb;
@@ -426,10 +420,10 @@ configs:
 
             RETURN NEW;
           END
-        $function$;
+        $$function$$;
         -- Supabase super admin
         DO
-        $$
+        $$$$
         BEGIN
           IF NOT EXISTS (
             SELECT 1
@@ -440,7 +434,7 @@ configs:
             CREATE USER supabase_functions_admin NOINHERIT CREATEROLE LOGIN NOREPLICATION;
           END IF;
         END
-        $$;
+        $$$$;
         GRANT ALL PRIVILEGES ON SCHEMA supabase_functions TO supabase_functions_admin;
         GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA supabase_functions TO supabase_functions_admin;
         GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA supabase_functions TO supabase_functions_admin;
@@ -451,7 +445,7 @@ configs:
         GRANT supabase_functions_admin TO postgres;
         -- Remove unused supabase_pg_net_admin role
         DO
-        $$
+        $$$$
         BEGIN
           IF EXISTS (
             SELECT 1
@@ -464,10 +458,10 @@ configs:
             DROP ROLE supabase_pg_net_admin;
           END IF;
         END
-        $$;
+        $$$$;
         -- pg_net grants when extension is already enabled
         DO
-        $$
+        $$$$
         BEGIN
           IF EXISTS (
             SELECT 1
@@ -486,12 +480,12 @@ configs:
             GRANT EXECUTE ON FUNCTION net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) TO supabase_functions_admin, postgres, anon, authenticated, service_role;
           END IF;
         END
-        $$;
+        $$$$;
         -- Event trigger for pg_net
         CREATE OR REPLACE FUNCTION extensions.grant_pg_net_access()
         RETURNS event_trigger
         LANGUAGE plpgsql
-        AS $$
+        AS $$$$
         BEGIN
           IF EXISTS (
             SELECT 1
@@ -512,10 +506,10 @@ configs:
             GRANT EXECUTE ON FUNCTION net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) TO supabase_functions_admin, postgres, anon, authenticated, service_role;
           END IF;
         END;
-        $$;
+        $$$$;
         COMMENT ON FUNCTION extensions.grant_pg_net_access IS 'Grants access to pg_net';
         DO
-        $$
+        $$$$
         BEGIN
           IF NOT EXISTS (
             SELECT 1
@@ -526,7 +520,7 @@ configs:
             EXECUTE PROCEDURE extensions.grant_pg_net_access();
           END IF;
         END
-        $$;
+        $$$$;
         INSERT INTO supabase_functions.migrations (version) VALUES ('20210809183423_update_grants');
         ALTER function supabase_functions.http_request() SECURITY DEFINER;
         ALTER function supabase_functions.http_request() SET search_path = supabase_functions;
@@ -535,22 +529,10 @@ configs:
       COMMIT;
   supabase-hello-function-config:
     content: |
-      // Follow this setup guide to integrate the Deno language server with your editor:
-      // https://deno.land/manual/getting_started/setup_your_environment
-      // This enables autocomplete, go to definition, etc.
-
       import { serve } from "https://deno.land/std@0.177.1/http/server.ts"
-
       serve(async () => {
-        return new Response(
-          `"Hello from Edge Functions!"`,
-          { headers: { "Content-Type": "application/json" } },
-        )
+        return new Response(`"Hello from Edge Functions!"`, { headers: { "Content-Type": "application/json" } })
       })
-
-      // To invoke:
-      // curl 'http://localhost:<KONG_HTTP_PORT>/functions/v1/hello' \
-      //   --header 'Authorization: Bearer <anon/service_role API key>'
   supabase-main-function-config:
     content: |
       import { serve } from 'https://deno.land/std@0.131.0/http/server.ts'
@@ -619,8 +601,8 @@ configs:
           })
         }
 
-        const servicePath = `/home/deno/functions/${service_name}`
-        console.error(`serving the request with ${servicePath}`)
+        const servicePath = `/home/deno/functions/$${service_name}`
+        console.error(`serving the request with $${servicePath}`)
 
         const memoryLimitMb = 150
         const workerTimeoutMs = 1 * 60 * 1000
@@ -806,7 +788,7 @@ configs:
               .metadata.parsed.error_severity = "info"
             }
             if parsed != null {
-             .metadata.parsed.error_severity = parsed.level
+              .metadata.parsed.error_severity = parsed.level
             }
             if .metadata.parsed.error_severity == "info" {
                 .metadata.parsed.error_severity = "log"
@@ -918,8 +900,7 @@ configs:
         "db_port" => System.get_env("POSTGRES_PORT"),
         "db_database" => System.get_env("POSTGRES_DB"),
         "require_user" => false,
-        # NOTICE THE DOUBLE $$ BELOW FOR DOCKER COMPOSE ESCAPING
-        "auth_query" => "SELECT * FROM pgbouncer.get_auth($$1)",
+        "auth_query" => "SELECT * FROM pgbouncer.get_auth($1)",
         "default_max_clients" => System.get_env("POOLER_MAX_CLIENT_CONN"),
         "default_pool_size" => System.get_env("POOLER_DEFAULT_POOL_SIZE"),
         "default_parameter_status" => %{"server_version" => version},
@@ -937,11 +918,9 @@ configs:
       end
 
 services:
-
   studio:
     container_name: supabase-studio
-    image: supabase/studio:2025.11.17-sha-6a18e49 # NOT ABLE TO GENERATE TYPES
-    ## image: supabase/studio:2025.11.10-sha-5291fe3 # THIS IS WORKING AND LATEST STABLE VERSION
+    image: supabase/studio:2025.12.09-sha-434634f
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "node", "-e", "fetch('http://localhost:3000/api/platform/profile').then((r) => {if (r.status !== 200) throw new Error(r.status)})" ]
@@ -952,29 +931,23 @@ services:
       analytics:
         condition: service_healthy
     environment:
-      # Binds nestjs listener to both IPv4 and IPv6 network interfaces
       HOSTNAME: "::"
-
       STUDIO_PG_META_URL: http://meta:8080
       POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PG_META_CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
-
       DEFAULT_ORGANIZATION_NAME: ${STUDIO_DEFAULT_ORGANIZATION}
       DEFAULT_PROJECT_NAME: ${STUDIO_DEFAULT_PROJECT}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-
       SUPABASE_URL: http://kong:8000
       SUPABASE_PUBLIC_URL: https://${SUPABASE_HOST}
       SUPABASE_ANON_KEY: ${ANON_KEY}
       SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
       AUTH_JWT_SECRET: ${JWT_SECRET}
-
       LOGFLARE_PUBLIC_ACCESS_TOKEN: ${LOGFLARE_PUBLIC_ACCESS_TOKEN}
       LOGFLARE_PRIVATE_ACCESS_TOKEN: ${LOGFLARE_PRIVATE_ACCESS_TOKEN}
-
       LOGFLARE_URL: http://analytics:4000
       NEXT_PUBLIC_ENABLE_LOGS: true
       # Comment to use Big Query backend for analytics
@@ -982,7 +955,7 @@ services:
       # Uncomment to use Big Query backend for analytics
       # NEXT_ANALYTICS_BACKEND_PROVIDER: bigquery
     networks:
-    - dokploy-network
+      - dokploy-network
 
   kong:
     container_name: supabase-kong
@@ -992,7 +965,6 @@ services:
       - 8000
       - 8443
     configs:
-      # https://github.com/supabase/supabase/issues/12661
       - source: supabase-kong-config
         target: /home/kong/kong.yml
     depends_on:
@@ -1001,7 +973,6 @@ services:
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /home/kong/kong.yml
-      # https://github.com/supabase/cli/issues/14
       KONG_DNS_ORDER: LAST,A,CNAME
       KONG_PLUGINS: request-transformer,cors,key-auth,acl,basic-auth,request-termination,ip-restriction
       KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
@@ -1010,15 +981,13 @@ services:
       SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
       DASHBOARD_USERNAME: ${DASHBOARD_USERNAME}
       DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD}
-    # https://unix.stackexchange.com/a/294837
-    # entrypoint: bash -c 'eval "echo \"$$(cat ~/temp.yml)\"" > ~/kong.yml && /docker-entrypoint.sh kong docker-start' TODO DELETE LATER
     entrypoint: bash -c '/docker-entrypoint.sh kong docker-start'
     networks:
       - dokploy-network
 
   auth:
     container_name: supabase-auth
-    image: supabase/gotrue:v2.182.1
+    image: supabase/gotrue:v2.183.0
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9999/health" ]
@@ -1027,38 +996,26 @@ services:
       retries: 3
     depends_on:
       db:
-        # Disable this if you are using an external Postgres database
         condition: service_healthy
       analytics:
         condition: service_healthy
     environment:
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
-      ## API_EXTERNAL_URL: http://supabase-kong:8000 PREVIOUS VALUE
       API_EXTERNAL_URL: https://${SUPABASE_HOST}
-
       GOTRUE_DB_DRIVER: postgres
       GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
-
       GOTRUE_SITE_URL: ${SITE_URL}
       GOTRUE_URI_ALLOW_LIST: ${ADDITIONAL_REDIRECT_URLS}
       GOTRUE_DISABLE_SIGNUP: ${DISABLE_SIGNUP}
-
       GOTRUE_JWT_ADMIN_ROLES: service_role
       GOTRUE_JWT_AUD: authenticated
       GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
       GOTRUE_JWT_EXP: ${JWT_EXPIRY}
       GOTRUE_JWT_SECRET: ${JWT_SECRET}
-
       GOTRUE_EXTERNAL_EMAIL_ENABLED: ${ENABLE_EMAIL_SIGNUP}
       GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: ${ENABLE_ANONYMOUS_USERS}
       GOTRUE_MAILER_AUTOCONFIRM: ${ENABLE_EMAIL_AUTOCONFIRM}
-
-      # Uncomment to bypass nonce check in ID Token flow. Commonly set to true when using Google Sign In on mobile.
-      # GOTRUE_EXTERNAL_SKIP_NONCE_CHECK: true
-
-      # GOTRUE_MAILER_SECURE_EMAIL_CHANGE_ENABLED: true
-      # GOTRUE_SMTP_MAX_FREQUENCY: 1s
       GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_ADMIN_EMAIL}
       GOTRUE_SMTP_HOST: ${SMTP_HOST}
       GOTRUE_SMTP_PORT: ${SMTP_PORT}
@@ -1069,39 +1026,17 @@ services:
       GOTRUE_MAILER_URLPATHS_CONFIRMATION: ${MAILER_URLPATHS_CONFIRMATION}
       GOTRUE_MAILER_URLPATHS_RECOVERY: ${MAILER_URLPATHS_RECOVERY}
       GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: ${MAILER_URLPATHS_EMAIL_CHANGE}
-
       GOTRUE_EXTERNAL_PHONE_ENABLED: ${ENABLE_PHONE_SIGNUP}
       GOTRUE_SMS_AUTOCONFIRM: ${ENABLE_PHONE_AUTOCONFIRM}
-      # Uncomment to enable custom access token hook. Please see: https://supabase.com/docs/guides/auth/auth-hooks for full list of hooks and additional details about custom_access_token_hook
-
-      # GOTRUE_HOOK_CUSTOM_ACCESS_TOKEN_ENABLED: "true"
-      # GOTRUE_HOOK_CUSTOM_ACCESS_TOKEN_URI: "pg-functions://postgres/public/custom_access_token_hook"
-      # GOTRUE_HOOK_CUSTOM_ACCESS_TOKEN_SECRETS: "<standard-base64-secret>"
-
-      # GOTRUE_HOOK_MFA_VERIFICATION_ATTEMPT_ENABLED: "true"
-      # GOTRUE_HOOK_MFA_VERIFICATION_ATTEMPT_URI: "pg-functions://postgres/public/mfa_verification_attempt"
-
-      # GOTRUE_HOOK_PASSWORD_VERIFICATION_ATTEMPT_ENABLED: "true"
-      # GOTRUE_HOOK_PASSWORD_VERIFICATION_ATTEMPT_URI: "pg-functions://postgres/public/password_verification_attempt"
-
-      # GOTRUE_HOOK_SEND_SMS_ENABLED: "false"
-      # GOTRUE_HOOK_SEND_SMS_URI: "pg-functions://postgres/public/custom_access_token_hook"
-      # GOTRUE_HOOK_SEND_SMS_SECRETS: "v1,whsec_VGhpcyBpcyBhbiBleGFtcGxlIG9mIGEgc2hvcnRlciBCYXNlNjQgc3RyaW5n"
-
-      # GOTRUE_HOOK_SEND_EMAIL_ENABLED: "false"
-      # GOTRUE_HOOK_SEND_EMAIL_URI: "http://host.docker.internal:54321/functions/v1/email_sender"
-      # GOTRUE_HOOK_SEND_EMAIL_SECRETS: "v1,whsec_VGhpcyBpcyBhbiBleGFtcGxlIG9mIGEgc2hvcnRlciBCYXNlNjQgc3RyaW5n"
     networks:
       - dokploy-network
 
   rest:
     container_name: supabase-rest
-    # image: postgrest/postgrest:v13.0.7
-    image: postgrest/postgrest:v14.1 # TESTING BECAUSE GEN TYPE CLI NOT WORKING NOT WORKING ATM
+    image: postgrest/postgrest:v14.1
     restart: unless-stopped
     depends_on:
       db:
-        # Disable this if you are using an external Postgres database
         condition: service_healthy
       analytics:
         condition: service_healthy
@@ -1118,13 +1053,11 @@ services:
       - dokploy-network
 
   realtime:
-    # This container name looks inconsistent but is correct because realtime constructs tenant id by parsing the subdomain
     container_name: realtime-dev.supabase-realtime
-    image: supabase/realtime:v2.63.0 # Supabase Template Current Version NOT LATEST VERSION
+    image: supabase/realtime:v2.68.0
     restart: unless-stopped
     depends_on:
       db:
-        # Disable this if you are using an external Postgres database
         condition: service_healthy
       analytics:
         condition: service_healthy
@@ -1148,18 +1081,17 @@ services:
       DNS_NODES: "''"
       RLIMIT_NOFILE: "10000"
       APP_NAME: realtime
-      SEED_SELF_HOST: true
-      RUN_JANITOR: true
+      SEED_SELF_HOST: "true"
+      RUN_JANITOR: "true"
     networks:
       - dokploy-network
 
-  # To use S3 backed storage: docker compose -f docker-compose.yml -f docker-compose.s3.yml up
   storage:
     container_name: supabase-storage
-    image: supabase/storage-api:v1.32.0
+    image: supabase/storage-api:v1.33.0
     restart: unless-stopped
     volumes:
-      - ../files/volumes/storage:/var/lib/storage:z
+      - storage-volume:/var/lib/storage:z
     healthcheck:
       test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://storage:5000/status" ]
       timeout: 5s
@@ -1167,7 +1099,6 @@ services:
       retries: 3
     depends_on:
       db:
-        # Disable this if you are using an external Postgres database
         condition: service_healthy
       rest:
         condition: service_started
@@ -1197,7 +1128,7 @@ services:
     image: darthsim/imgproxy:v3.8.0
     restart: unless-stopped
     volumes:
-      - ../files/volumes/storage:/var/lib/storage:z
+      - storage-volume:/var/lib/storage:z
     healthcheck:
       test: [ "CMD", "imgproxy", "health" ]
       timeout: 5s
@@ -1217,7 +1148,6 @@ services:
     restart: unless-stopped
     depends_on:
       db:
-        # Disable this if you are using an external Postgres database
         condition: service_healthy
       analytics:
         condition: service_healthy
@@ -1234,8 +1164,7 @@ services:
 
   functions:
     container_name: supabase-edge-functions
-    #image: supabase/edge-runtime:v1.69.23 # Supabase Template Current Version NOT LATEST VERSION
-    image: supabase/edge-runtime:v1.69.24 # Supabase Template Latest Version
+    image: supabase/edge-runtime:v1.69.28
     restart: unless-stopped
     configs:
       - source: supabase-hello-function-config
@@ -1259,17 +1188,16 @@ services:
 
   analytics:
     container_name: supabase-analytics
-    image: supabase/logflare:1.26.12 # Dokploy Current LATEST VERSION
-    # image: supabase/logflare:1.22.6 # Supabase Template Current NOT LATEST VERSION
+    image: supabase/logflare:1.26.25
     restart: unless-stopped
     expose:
       - 4000
     # Uncomment to use Big Query backend for analytics
-    # volumes:
-    #   - type: bind
-    #     source: ${PWD}/gcloud.json
-    #     target: /opt/app/rel/logflare/bin/gcloud.json
-    #     read_only: true
+        # volumes:
+        #   - type: bind
+        #     source: ${PWD}/gcloud.json
+        #     target: /opt/app/rel/logflare/bin/gcloud.json
+        #     read_only: true
     healthcheck:
       test: [ "CMD", "curl", "http://localhost:4000/health" ]
       timeout: 5s
@@ -1277,7 +1205,6 @@ services:
       retries: 10
     depends_on:
       db:
-        # Disable this if you are using an external Postgres database
         condition: service_healthy
     environment:
       LOGFLARE_NODE_HOST: 127.0.0.1
@@ -1291,8 +1218,6 @@ services:
       LOGFLARE_PRIVATE_ACCESS_TOKEN: ${LOGFLARE_PRIVATE_ACCESS_TOKEN}
       LOGFLARE_SINGLE_TENANT: true
       LOGFLARE_SUPABASE_MODE: true
-      # LOGFLARE_MIN_CLUSTER_SIZE: 1 ## THIS IS NOT BEING USED ANMORE ??
-
       # Comment variables to use Big Query backend for analytics
       POSTGRES_BACKEND_URL: postgresql://supabase_admin:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/_supabase
       POSTGRES_BACKEND_SCHEMA: _analytics
@@ -1303,39 +1228,29 @@ services:
     networks:
       - dokploy-network
 
-  # Comment out everything below this point if you are using an external Postgres database
-
   db:
     container_name: supabase-db
-    image: supabase/postgres:15.8.1.085 # Current Stable Version 23/11/2025
-    # image: supabase/postgres:15.14.1.054 # 23/11/2025 Causes db container to crash when building docker containers.
+    image: supabase/postgres:15.8.1.085
     restart: unless-stopped
     ports:
       - 127.0.0.1:${POSTGRES_PORT}:${POSTGRES_PORT}
     configs:
-      # --- Internal Supabase Setup ---
       - source: supabase-supabase-config
         target: /docker-entrypoint-initdb.d/migrations/97-_supabase.sql
-      # --- Webhooks (Run First) ---
       - source: supabase-webhooks-config
         target: /docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql
-      # --- Realtime ---
       - source: supabase-realtime-config
         target: /docker-entrypoint-initdb.d/migrations/99-realtime.sql
-      # --- Roles ---
       - source: supabase-roles-config
         target: /docker-entrypoint-initdb.d/init-scripts/99-roles.sql
-      # --- JWT Settings ---
       - source: supabase-jwt-config
         target: /docker-entrypoint-initdb.d/init-scripts/99-jwt.sql
-      # --- Analytics/Logs ---
       - source: supabase-logs-config
         target: /docker-entrypoint-initdb.d/migrations/99-logs.sql
-      # --- Pooler Support ---
       - source: supabase-pooler-config
         target: /docker-entrypoint-initdb.d/migrations/99-pooler.sql
     volumes:
-      - ../files/volumes/db/data:/var/lib/postgresql/data:Z
+      - db-data:/var/lib/postgresql/data:Z
       - db-config:/etc/postgresql-custom
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "postgres", "-h", "localhost" ]
@@ -1361,14 +1276,14 @@ services:
         "-c",
         "config_file=/etc/postgresql/postgresql.conf",
         "-c",
-        "log_min_messages=fatal" # prevents Realtime polling queries from appearing in logs
+        "log_min_messages=fatal"
       ]
     networks:
       - dokploy-network
 
   vector:
     container_name: supabase-vector
-    image: timberio/vector:0.28.1-alpine # Supabase Template Current
+    image: timberio/vector:0.28.1-alpine
     restart: unless-stopped
     configs:
       - source: supabase-vector-config
@@ -1388,10 +1303,9 @@ services:
     networks:
       - dokploy-network
 
-  # Update the DATABASE_URL if you are using an external Postgres database
   supavisor:
     container_name: supabase-pooler
-    image: supabase/supavisor:2.7.4 # Current Stable Version 23/11/2025
+    image: supabase/supavisor:2.7.4
     restart: unless-stopped
     expose:
       - 5432
@@ -1432,7 +1346,9 @@ services:
       - dokploy-network
 
 volumes:
+  db-data:
   db-config:
+  storage-volume:
 
 networks:
   dokploy-network:

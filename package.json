@@ -9,7 +9,10 @@
     "lint": "eslint",
     "docker:build:local": "docker build -t hive-open-source-2025:local .",
     "docker:run:local": "docker run --rm --env-file .env.local -p 3001:3001 hive-open-source-2025:local",
-    "generate:supabase-variables": "bash ./scripts/generate-supabase-variables.sh"
+    "generate:supabase-variables": "bash ./scripts/generate-supabase-variables.sh",
+    "supabase:dev:up": "docker compose -f supabase/staging-docker-compose.yaml --env-file .env.local up -d",
+    "supabase:dev:down": "docker compose -f supabase/staging-docker-compose.yaml --env-file .env.local down",
+    "supabase:dev:logs": "docker compose -f supabase/staging-docker-compose.yaml --env-file .env.local logs -f --tail=100"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
