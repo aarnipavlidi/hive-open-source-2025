@@ -1,5 +1,21 @@
 # Documentation for hive-open-source-2025
 
+## Table of contents
+
+- [Requirements](#requirements)
+- [Getting Started (development)](#getting-started-development)
+- [Running with Docker locally](#running-with-docker-locally)
+- [Dokploy](#dokploy)
+  - [Automated Cron Jobs](#automated-cron-jobs)
+  - [Daily Docker Cleanup](#daily-docker-cleanup)
+- [Supabase](#supabase)
+  - [Supabase Creating Migration](#supabase-creating-migration)
+  - [Supabase Applying Migration](#supabase-applying-migration)
+  - [Supabase Generating Types](#supabase-generating-types)
+    - [Best practices](#best-practices)
+
+***
+
 ## Requirements
 
 Following things are required at the moment, when running project locally:
