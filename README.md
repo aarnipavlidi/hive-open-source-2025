@@ -7,8 +7,8 @@
 
 Following things are required at the moment, when running project locally:
 
-- Node.js on version `24.11.1`
-- NPM on version `11.6.2`
+- Node.js on version `24.12.0`
+- NPM on version `11.7.0`
 
 ## Getting Started (development)
 
@@ -50,13 +50,13 @@ npm run docker:build:local
 npm run docker:run:local
 ```
 
-### Dokploy
+## Dokploy
 
-#### Automated Cron Jobs
+### Automated Cron Jobs
 
 As of right now there are some issues, the way Dokploy is doing cleanup by removing unused images etc. which means the storage gets full faster than it is supposed to. So to tackle this, we introduce automated script, which handles this for us once per day.
 
-##### Daily Docker Cleanup
+#### Daily Docker Cleanup
 
 ```#!/bin/bash
 WAIT=10
