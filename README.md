@@ -141,7 +141,7 @@ PGSSLMODE="disable" ## https://github.com/supabase/cli/issues/4142#issuecomment-
 
 4. Connect to the server via Tailscale SSH by running following command `ssh -L *:5432:localhost:5432 root@<tailscale_machine_name>` on terminal.
 5. Once connected, leave terminal open and create new terminal window.
-6. On new terminal window run following command to generate types `npm run gen:types:stg` or `npm run gen:types:prod` depending on which environment you want to generate types from.
+6. On new terminal window run following command to apply migrations `npm run db:push:stg` or `npm run db:push:prod` depending on which environment you want to apply migrations to.
 7. Once migration file has been applied successfully, you can close the SSH connection.
 
 ***
