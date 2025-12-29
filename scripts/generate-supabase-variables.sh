@@ -111,7 +111,7 @@ fi
 # Unset exported vars we no longer need in the environment for safety
 unset ANON_PAYLOAD SERVICE_PAYLOAD
 
-# 4. WRITE TO .ENV.LOCAL FILE
+# 4. WRITE TO .ENV.SUPABASE FILE
 # ---------------------------
 cat > .env.local <<EOF
 ############################
