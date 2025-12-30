@@ -13,6 +13,8 @@ jobs:
       TF_VAR_cloudflare_api_token: ${{ secrets.CF_API_TOKEN }}
       TF_VAR_cloudflare_zone_id: ${{ secrets.CF_ZONE_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.CF_R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_R2_SECRET_ACCESS_KEY }}
     defaults:
       run:
         working-directory: terraform
