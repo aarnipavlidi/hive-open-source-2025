@@ -33,7 +33,33 @@ variable "cloudflare_api_token" {
 }
 
 variable "cloudflare_zone_id" {
-  type = string
+  type      = string
+}
+
+variable "cloudflare_zone_name" {
+  type      = string
+  default   = "usko.lol"
+}
+
+variable "hetzner_server_ip" {
+  type      = string
+  default   = "95.217.184.122"
+}
+
+resource "cloudflare_dns_record" "hive_stg" {
+  zone_id = var.cloudflare_zone_id
+  name = "hive-stg.${var.cloudflare_zone_name}"
+  ttl = 1
+  type = "A"
+  comment = "Domain for Next.js application at staging environment. Managed via Terraform (hive-open-source-2025)."
+  content = var.hetzner_server_ip
+  proxied = true
+  tags = ["hive-open-source-2025", "staging", "nextjs"]
+}
+
+import {
+  to = cloudflare_dns_record.hive_stg
+  id = "${var.cloudflare_zone_id}/616353d2c75c6fd3a199c4a673f77195"
 }
 
 resource "cloudflare_ruleset" "api_ratelimit" {
