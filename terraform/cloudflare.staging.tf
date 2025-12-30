@@ -35,10 +35,10 @@ variable "cloudflare_zone_id" {
   type = string
 }
 
-import {
-  to = cloudflare_ruleset.api_ratelimit
-  id = "zones/${var.cloudflare_zone_id}/f815655909da4a60b8fd95d8d539a78b"
-}
+# import {
+#   to = cloudflare_ruleset.api_ratelimit
+#   id = "zones/${var.cloudflare_zone_id}/f815655909da4a60b8fd95d8d539a78b"
+# }
 
 resource "cloudflare_ruleset" "api_ratelimit" {
   zone_id     = var.cloudflare_zone_id
