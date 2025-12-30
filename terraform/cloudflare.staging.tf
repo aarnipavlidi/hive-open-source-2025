@@ -47,14 +47,14 @@ variable "hetzner_server_ip" {
 }
 
 resource "cloudflare_dns_record" "hive_stg" {
-  zone_id = var.cloudflare_zone_id
-  name = "hive-stg.${var.cloudflare_zone_name}"
-  ttl = 1
-  type = "A"
-  comment = "Domain for Next.js application at staging environment. Managed via Terraform (hive-open-source-2025)."
-  content = var.hetzner_server_ip
-  proxied = true
-  tags = ["hive-open-source-2025", "staging", "nextjs"]
+  zone_id   = var.cloudflare_zone_id
+  name      = "hive-stg.${var.cloudflare_zone_name}"
+  ttl       = 1
+  type      = "A"
+  comment   = "Next.js application at staging environment. Managed via Terraform (hive-open-source-2025)." ## Maximum 100 characters allowed only.
+  content   = var.hetzner_server_ip
+  proxied   = true
+  tags      = [] ## Not allowed on current plan.
 }
 
 import {
