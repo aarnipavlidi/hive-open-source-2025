@@ -12,7 +12,7 @@ terraform {
     key                           = "cloudflare.staging.tfstate"
     region                        = "auto" # Options: wnam, enam, weur, eeur, apac, oc, auto
     endpoints = {
-        s3                        = "https://c9234561c8f6c105de23b18d16b1d5ba.eu.r2.cloudflarestorage.com/hive-open-source-2025"
+        s3                        = "https://c9234561c8f6c105de23b18d16b1d5ba.eu.r2.cloudflarestorage.com"
     }
     skip_credentials_validation   = true
     skip_metadata_api_check       = true
