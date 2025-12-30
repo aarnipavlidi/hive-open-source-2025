@@ -79,15 +79,11 @@ resource "cloudflare_dns_record" "supabase-stg" {
   tags      = [] ## Not allowed on current plan.
 }
 
-import {
-  to = cloudflare_dns_record.hive_dokploy
-  id = "${var.cloudflare_zone_id}/4c0c320b5453b18d45468124c539a8b2"
-}
-
-import {
-  to = cloudflare_dns_record.supabase-stg
-  id = "${var.cloudflare_zone_id}/d11678e31fa2e2fdb071e706a33f11ed"
-}
+# To import existing DNS record to Terraform state, use the command below:
+# import {
+#   to = cloudflare_dns_record.<resource_name>
+#   id = "${var.cloudflare_zone_id}/<record_id>"
+# }
 
 resource "cloudflare_ruleset" "api_ratelimit" {
   zone_id     = var.cloudflare_zone_id
