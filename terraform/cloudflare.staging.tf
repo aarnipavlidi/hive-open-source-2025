@@ -21,7 +21,7 @@ variable "cloudflare_zone_id" {
 }
 
 resource "cloudflare_ruleset" "api_ratelimit" {
-  zone_id     = var.zone_id
+  zone_id     = var.cloudflare_zone_id
   name        = "Protecting API routes via ratelimiting"
   phase       = "http_ratelimit"
   kind        = "zone"
