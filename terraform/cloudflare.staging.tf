@@ -36,11 +36,6 @@ variable "cloudflare_zone_id" {
   type = string
 }
 
-import {
-  to = cloudflare_ruleset.api_ratelimit
-  id = "zones/${var.cloudflare_zone_id}/0e7ea4c29a954be992c9f551f078c2de"
-}
-
 resource "cloudflare_ruleset" "api_ratelimit" {
   zone_id     = var.cloudflare_zone_id
   name        = "Protecting API routes via ratelimiting"
