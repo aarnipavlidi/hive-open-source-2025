@@ -1,0 +1,30 @@
+name: "Cloudflare Terraform - Staging"
+
+on:
+  push:
+    branches: [ "staging" ]
+
+jobs:
+  terraform:
+    name: "Staging Terraform Apply"
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      TF_VAR_cloudflare_api_token: ${{ secrets.CF_API_TOKEN }}
+      TF_VAR_cloudflare_zone_id: ${{ secrets.CF_ZONE_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      - name: Terraform Init
+        run: terraform init
+      - name: Terraform Plan
+        run: terraform plan -input=false
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false
