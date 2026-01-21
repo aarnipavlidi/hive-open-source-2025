@@ -58,6 +58,27 @@ export type Database = {
         }
         Relationships: []
       }
+      materials: {
+        Row: {
+          code: number
+          created_at: string | null
+          id: string
+          name: Database["public"]["Enums"]["recycling_material_type"]
+        }
+        Insert: {
+          code: number
+          created_at?: string | null
+          id?: string
+          name: Database["public"]["Enums"]["recycling_material_type"]
+        }
+        Update: {
+          code?: number
+          created_at?: string | null
+          id?: string
+          name?: Database["public"]["Enums"]["recycling_material_type"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -66,7 +87,28 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      recycling_material_type:
+        | "Biojäte"
+        | "Poistotekstiili"
+        | "Rakennus- ja purkujäte"
+        | "Kyllästetty puu"
+        | "Puu"
+        | "Lamput"
+        | "Ajoneuvoakut (lyijy)"
+        | "Muu jäte"
+        | "Tekstiili"
+        | "Muovi"
+        | "Kannettavat akut ja paristot"
+        | "Sähkölaitteet (SER)"
+        | "Vaarallinen jäte"
+        | "Lasi"
+        | "Metalli"
+        | "Kartonki"
+        | "Pahvi"
+        | "Paperi"
+        | "Energiajäte"
+        | "Puutarhajäte"
+        | "Sekajäte"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -196,7 +238,31 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      recycling_material_type: [
+        "Biojäte",
+        "Poistotekstiili",
+        "Rakennus- ja purkujäte",
+        "Kyllästetty puu",
+        "Puu",
+        "Lamput",
+        "Ajoneuvoakut (lyijy)",
+        "Muu jäte",
+        "Tekstiili",
+        "Muovi",
+        "Kannettavat akut ja paristot",
+        "Sähkölaitteet (SER)",
+        "Vaarallinen jäte",
+        "Lasi",
+        "Metalli",
+        "Kartonki",
+        "Pahvi",
+        "Paperi",
+        "Energiajäte",
+        "Puutarhajäte",
+        "Sekajäte",
+      ],
+    },
   },
 } as const
 
